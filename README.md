@@ -183,7 +183,7 @@ Evolution API menjembatani n8n dengan WhatsApp Web secara stabil dan mandiri (*s
 
 ### 1. Kloning Repositori
 ```bash
-git clone https://github.com/username/umkmense-pro.git
+git clone https://github.com/ucuk048/umkmense-pro.git
 cd umkmense-pro
 ```
 

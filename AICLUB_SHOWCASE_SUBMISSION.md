@@ -26,7 +26,7 @@ Asisten finansial cerdas WhatsApp untuk UMKM: catat transaksi via voice note, ek
 
 ### 4. Link Proyek (Repository / Project Link)
 ```text
-https://github.com/username/umkmense-pro
+https://github.com/ucuk048/umkmense-pro
 ```
 *(Ganti `username` dengan nama akun GitHub Anda)*
 
