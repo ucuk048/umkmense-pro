@@ -237,9 +237,16 @@ WhatsApp Phone ---> [Internet] ---> Cloudflare Tunnel / Ngrok
 
 1. **Kloning Repositori:**
    ```bash
-   git clone https://github.com/ucuk048/umkmense-pro.git
-   cd umkmense-pro
-   ```
+    git clone https://github.com/ucuk048/umkmense-pro.git
+    cd umkmense-pro
+    ```
+
+> [!TIP]
+> **Belum Pernah Memasang Docker Sama Sekali? (Panduan Pengguna Awam):**
+> Anda tidak perlu bingung mencari dan mengonfigurasi Docker secara manual.
+> * **Di Windows:** Cukup klik dua kali `START_UMKMENSE_BOT.bat`. Skrip akan otomatis mendeteksi bahwa Docker belum ada di komputer Anda, lalu menawarkan pemasangan otomatis 1-klik melalui `winget` atau membuka peramban langsung ke unduhan installer resmi Docker Desktop. Setelah instalasi Docker selesai dan aplikasinya dibuka, klik dua kali kembali `START_UMKMENSE_BOT.bat`.
+> * **Di Linux:** Jalankan `./setup.sh`, skrip akan otomatis mendeteksi dan menawarkan instalasi Docker resmi dengan 1 konfirmasi `Y`.
+
 2. **Konfigurasi Environment (.env):**
    Salin berkas template dan masukkan kunci API yang sudah diperoleh:
    ```bash
@@ -248,22 +255,28 @@ WhatsApp Phone ---> [Internet] ---> Cloudflare Tunnel / Ngrok
 3. **Instalasi & Menjalankan Otomatis 1 Perintah:**
    Pilih salah satu sesuai sistem operasi Anda:
 
-   * **Cara Universal (Docker Compose - Semua OS):**
-     ```bash
-     docker compose up -d
-     ```
-     *Perintah ini otomatis mengunduh image, menyiapkan network `evo_net`, membuat volume, dan menyalakan 4 container simultan (Postgres, Redis, Evolution API, dan n8n).*
-
-   * **Pengguna Windows (1-Klik Otomatis):**
+   * **Pengguna Windows (1-Klik Otomatis - Sangat Direkomendasikan untuk Pemula):**
      Cukup klik ganda atau jalankan:
      ```cmd
      START_UMKMENSE_BOT.bat
      ```
-     *Skrip ini otomatis mendeteksi Docker Desktop, menjalankan docker compose, memelihara database SQLite, mengimpor workflow `workflow_tidied.json`, dan langsung membuka antarmuka n8n di peramban.*
+     *Skrip pintar ini otomatis:*
+     1. Memeriksa keberadaan Docker Desktop (jika belum ada, membantu proses instalasi otomatis).
+     2. Menyalakan Docker Desktop jika belum aktif.
+     3. Mengunduh dan menyalakan 4 container simultan (`evo_postgres`, `evo_redis`, `evolution_api`, `n8n`).
+     4. Menghubungkan jaringan internal Docker `evo_net`.
+     5. Melakukan health check otomatis hingga seluruh service siap.
+     6. Membersihkan riwayat eksekusi lawas agar database tetap ringan.
+     7. Langsung membuka halaman n8n di peramban web Anda.
 
    * **Pengguna Linux / macOS:**
      ```bash
      chmod +x setup.sh && ./setup.sh
+     ```
+
+   * **Cara Universal (Docker Compose Manual):**
+     ```bash
+     docker compose up -d
      ```
 
 4. **Buka Dashboard Layanan:**

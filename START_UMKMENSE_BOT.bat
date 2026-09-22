@@ -8,26 +8,105 @@ echo           UMKMENSE PRO - ALL-IN-ONE AUTOMATIC LAUNCHER
 echo ======================================================================
 echo.
 
-:: 1. Periksa apakah Docker Engine berjalan
+:: 1. Periksa apakah Docker Engine berjalan atau terpasang
 echo [1/4] Memeriksa status Docker Desktop...
+
+:: Cari path executable Docker Desktop
+set "DOCKER_EXE="
+if exist "%ProgramFiles%\Docker\Docker\Docker Desktop.exe" set "DOCKER_EXE=%ProgramFiles%\Docker\Docker\Docker Desktop.exe"
+if exist "%LocalAppData%\Programs\DockerDesktop\Docker Desktop.exe" set "DOCKER_EXE=%LocalAppData%\Programs\DockerDesktop\Docker Desktop.exe"
+
+:: Cek apakah Docker daemon sudah aktif
 docker info >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     echo Docker Desktop sudah aktif.
     goto docker_ready
 )
 
-echo Docker Desktop belum menyala. Memulai Docker Desktop...
-start "" "C:\Users\Administrator\AppData\Local\Programs\DockerDesktop\Docker Desktop.exe"
-echo Menunggu Docker siap...
+:: Jika docker cli tidak ada dan executable Docker Desktop tidak ditemukan
+where docker >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    if "!DOCKER_EXE!"=="" goto docker_not_installed
+)
 
+:: Jika terpasang tetapi belum menyala, mulai Docker Desktop
+if not "!DOCKER_EXE!"=="" (
+    echo Docker Desktop belum menyala. Memulai Docker Desktop...
+    start "" "!DOCKER_EXE!"
+) else (
+    echo Memulai Docker Desktop...
+    start "" "docker" >nul 2>&1
+)
+echo Menunggu Docker siap berjalan...
+
+set /a docker_wait_count=0
 :wait_docker
-ping -n 6 127.0.0.1 >nul
+set /a docker_wait_count+=1
+if %docker_wait_count% GTR 45 (
+    echo.
+    echo PERINGATAN: Docker belum siap setelah 90 detik.
+    echo Pastikan Docker Desktop terbuka dan ikon paus Docker sudah berstatus "Engine running".
+    echo Setelah Docker menyala, jalankan kembali skrip ini.
+    echo.
+    pause
+    exit /b 1
+)
+ping -n 3 127.0.0.1 >nul
 docker info >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    echo Sedang menghubungkan ke Docker daemon...
+    echo Sedang menghubungkan ke Docker daemon (percobaan %docker_wait_count%/45)...
     goto wait_docker
 )
 echo Docker Desktop berhasil aktif!
+goto docker_ready
+
+:docker_not_installed
+echo.
+echo ======================================================================
+echo [PERHATIAN] DOCKER DESKTOP BELUM TERPASANG DI KOMPUTER ANDA
+echo ======================================================================
+echo UMKMense Pro membutuhkan Docker Desktop untuk menjalankan database,
+echo WhatsApp gateway, dan AI engine secara otomatis di komputer Anda.
+echo.
+
+where winget >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo Sistem mendeteksi Windows Package Manager (winget).
+    echo Anda dapat memasang Docker Desktop secara otomatis dengan 1 langkah.
+    echo.
+    set /p DO_INSTALL="Apakah Anda ingin memasang Docker Desktop sekarang? (Y/N, default Y): "
+    if "!DO_INSTALL!"=="" set "DO_INSTALL=Y"
+    if /I "!DO_INSTALL!"=="Y" (
+        echo.
+        echo [INFO] Mengunduh dan memasang Docker Desktop via winget...
+        echo Harap tunggu hingga proses selesai.
+        winget install -e --id Docker.DockerDesktop --accept-source-agreements --accept-package-agreements
+        echo.
+        echo ==================================================================
+        echo INSTALASI SELESAI
+        echo 1. Jika sistem meminta restart/log out, silakan restart komputer.
+        echo 2. Buka 'Docker Desktop' dari Start Menu dan tunggu hingga siap.
+        echo 3. Jalankan kembali START_UMKMENSE_BOT.bat ini.
+        echo ==================================================================
+        pause
+        exit /b 0
+    )
+)
+
+echo Membuka tautan unduhan resmi Docker Desktop di peramban...
+start https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe
+start https://www.docker.com/products/docker-desktop/
+echo.
+echo ======================================================================
+echo PETUNJUK PEMASANGAN UNTUK PENGGUNA AWAM:
+echo 1. Unduh installer Docker Desktop yang telah terbuka di peramban Anda.
+echo 2. Buka file installer tersebut dan ikuti petunjuknya (centang WSL 2).
+echo 3. Setelah selesai, buka aplikasi 'Docker Desktop' dari Start Menu.
+echo 4. Jalankan kembali file START_UMKMENSE_BOT.bat ini.
+echo ======================================================================
+echo.
+pause
+exit /b 0
 
 :docker_ready
 
