@@ -179,41 +179,110 @@ Evolution API menjembatani n8n dengan WhatsApp Web secara stabil dan mandiri (*s
 
 ---
 
-## Panduan Menjalankan (Quick Start)
+## Kebutuhan Sistem & Alat (Requirements & Tools)
 
-### 1. Kloning Repositori
-```bash
-git clone https://github.com/ucuk048/umkmense-pro.git
-cd umkmense-pro
+### 1. Spesifikasi Perangkat Keras (Hardware Requirements)
+* **Local Docker (PC / Laptop):**
+  * **RAM:** Minimal 4 GB (Direkomendasikan 8 GB agar Docker Desktop, n8n, Evolution API, Redis, dan PostgreSQL berjalan lancar simultan).
+  * **CPU:** Minimal 2 Core (arsitektur x86_64 atau ARM64).
+  * **Penyimpanan:** Minimal 10 GB ruang kosong (untuk image container, log eksekusi, dan volume data).
+* **VPS / Server Cloud (Jika Self-Host 24/7):**
+  * Minimal 1 vCPU / 2 GB RAM (cukup untuk Linux server berbasis terminal tanpa GUI desktop).
+
+### 2. Software & Perangkat yang Diperlukan
+1. **Docker Engine & Docker Compose / Docker Desktop:** Menjalankan ekosistem microservices secara terisolasi.
+2. **Evolution API (v2):** Gateway mandiri untuk menghubungkan nomor WhatsApp bisnis via multi-device pairing.
+3. **Redis:** Cache in-memory penyimpan sesi dan status koneksi WhatsApp.
+4. **PostgreSQL / SQLite:** Database relasional penyimpan riwayat transaksi, buku kas, dan event idempotensi n8n.
+5. **Tunnel Publik (Khusus Local Docker):** Cloudflare Tunnel atau Ngrok (agar WhatsApp/Evolution API dapat mengirim event webhook masuk ke IP lokal PC).
+6. **Kunci API Layanan:**
+   * Google Gemini API Key (1 s.d. 3 akun dari Google AI Studio)
+   * Groq Cloud API Key (LLaMA-3.3 70B)
+   * Vibe AI API Key (via Telegram bot `@sekai_gatewaybot`)
+
+---
+
+## Perbandingan Opsi Deployment: Local Docker vs Cloud n8n
+
+| Parameter | Opsi A: Local Docker (PC/Laptop) | Opsi B: Cloud n8n (n8n.cloud + VPS) |
+| :--- | :--- | :--- |
+| **Biaya Bulanan** | 100% Gratis (menggunakan komputer sendiri) | Berlangganan (n8n.cloud mulai 20 euro/bln + VPS Evolution $3-$5) |
+| **Ketersediaan** | Aktif hanya saat komputer/laptop menyala | Aktif 24/7 tanpa henti (*always-on*) |
+| **Hosting WhatsApp** | Evolution API berjalan di Docker lokal | Evolution API dipasang di VPS (DigitalOcean/Hetzer/Railway) |
+| **Akses Webhook** | Wajib menggunakan Cloudflare Tunnel / Ngrok | Webhook n8n.cloud otomatis memiliki domain SSL resmi |
+| **Kedaulatan Data** | SQLite dan database tersimpan 100% lokal | Tersimpan di cloud infrastructure n8n |
+
+---
+
+## Panduan Deployment
+
+### Opsi A: Local Docker (Self-Hosted)
+
+Seluruh layanan berjalan di dalam satu jaringan internal Docker (`evo_net`):
+
+```
+WhatsApp Phone ---> [Internet] ---> Cloudflare Tunnel / Ngrok
+                                           |
+                                 (Port 8080 / 5678)
+                                           v
+[Local Docker] ----------------------------------------------------
+|  - evolution_api (WhatsApp Gateway) <--> evo_redis               |
+|         | (Webhook POST)                                        |
+|         v                                                        |
+|  - n8n Container (Engine Workflow UMKMense Pro)                  |
+|         |                                                        |
+|  - SQLite / PostgreSQL (Data Table Transaksi & Idempotensi)      |
+-------------------------------------------------------------------
 ```
 
-### 2. Konfigurasi Lingkungan (.env)
-Salin berkas contoh environment:
-```bash
-cp .env.example .env
+1. **Kloning Repositori:**
+   ```bash
+   git clone https://github.com/ucuk048/umkmense-pro.git
+   cd umkmense-pro
+   ```
+2. **Konfigurasi Environment (.env):**
+   Salin berkas template dan masukkan kunci API yang sudah diperoleh:
+   ```bash
+   cp .env.example .env
+   ```
+3. **Jalankan Bot Satu Klik:**
+   Di Windows, cukup jalankan:
+   ```cmd
+   START_UMKMENSE_BOT.bat
+   ```
+   Skrip otomatis menyalakan Docker, memeriksa database, mengimpor workflow versi rapi, dan memvalidasi healthcheck `http://localhost:5678/healthz`.
+4. **Buka Dashboard:**
+   * n8n Editor: `http://localhost:5678`
+   * Evolution API Manager: `http://localhost:8080`
+
+---
+
+### Opsi B: Cloud n8n (n8n.cloud)
+
+Layanan n8n.cloud adalah SaaS terkelola yang menangani eksekusi workflow secara *always-on* tanpa membutuhkan PC menyala. Karena n8n.cloud tidak mengizinkan penambahan container Docker kustom di layanannya, Evolution API di-hosting secara mandiri di VPS ringan:
+
 ```
-Isi variabel lingkungan dengan kredensial yang sudah Anda peroleh:
-```ini
-NODE_ENV=production
-N8N_HOST=127.0.0.1
-N8N_PORT=5678
-EVOLUTION_API_KEY=your_evolution_key
-GROQ_API_KEY=gsk_your_groq_key
-VIBE_API_KEY=sk-your_vibe_key_from_telegram
-GEMINI_API_KEY_1=AIzaSy_primary_key
-GEMINI_API_KEY_2=AIzaSy_backup_key_1
-GEMINI_API_KEY_3=AIzaSy_backup_key_2
-UMKMENSE_MAX_AUDIO_MB=8
-UMKMENSE_MAX_IMAGE_MB=10
-UMKMENSE_MAX_MEDIA_MB=12
+[Pengguna WhatsApp] ---> [Evolution API di VPS / Railway]
+                                     |
+                          (HTTPS Webhook Event)
+                                     v
+                    [n8n.cloud (Workflow Engine)]
+                                     |
+                        (Gemini / Groq / Vibe APIs)
 ```
 
-### 3. Startup Otomatis Satu Klik (Windows)
-Jalankan file launcher otomatis:
-```cmd
-START_UMKMENSE_BOT.bat
-```
-Sistem akan memvalidasi Docker, database SQLite, mengimpor workflow n8n secara otomatis, dan memastikan status kesehatan sistem `HTTP 200 OK`.
+1. **Pasang Evolution API di VPS:**
+   Jalankan container Evolution API + Redis di VPS murah (DigitalOcean, Hetzner, atau Railway) yang sudah memiliki IP publik / domain HTTPS.
+2. **Import Workflow ke n8n.cloud:**
+   * Buka dashboard n8n.cloud Anda.
+   * Klik menu **Workflows** → **Add Workflow** → **Import from File**.
+   * Pilih berkas `workflow_tidied.json` dari repositori ini.
+3. **Isi Kredensial di n8n.cloud:**
+   * Masuk ke menu **Credentials** di n8n.cloud.
+   * Buat kredensial `Google Gemini Chat Model`, `Groq Cloud API`, dan `Vibe madewgn.dev API`.
+4. **Sambungkan Webhook:**
+   * Salin URL produksi dari node `WhatsApp Universal Ingestion Webhook` di n8n.cloud (contoh: `https://instansi-anda.app.n8n.cloud/webhook/wa-universal-inbound`).
+   * Daftarkan webhook tersebut ke Evolution API Anda.
 
 ---
 
