@@ -235,17 +235,39 @@ WhatsApp Phone ---> [Internet] ---> Cloudflare Tunnel / Ngrok
 -------------------------------------------------------------------
 ```
 
+### Opsi Utama: 1 Baris Perintah Otomatis (Tanpa Butuh Git / Tanpa Butuh Docker)
+
+Jika Anda adalah pengguna awam dan komputer masih **kosong** (belum terpasang Git, Docker, n8n, atau database):
+
+* **Pengguna Windows (PowerShell):**
+  Buka aplikasi **PowerShell** bawaan Windows, lalu salin dan tempel 1 baris perintah ini kemudian tekan Enter:
+  ```powershell
+  irm https://raw.githubusercontent.com/ucuk048/umkmense-pro/main/install.ps1 | iex
+  ```
+  *Skrip akan otomatis:*
+  1. Mengunduh proyek tanpa perlu install Git.
+  2. Memasang Docker Desktop resmi via Windows Package Manager / Installer resmi jika belum ada.
+  3. Mengunduh dan menyalakan Postgres, Redis, Evolution API, dan n8n.
+  4. Mengimpor workflow dan membuat shortcut **"UMKMense Pro Bot"** di Desktop Anda.
+  5. Membuka peramban langsung ke `http://localhost:5678`.
+
+* **Pengguna Linux / macOS (Terminal):**
+  Buka **Terminal**, lalu salin dan tempel 1 baris perintah ini:
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/ucuk048/umkmense-pro/main/install.sh | bash
+  ```
+
+---
+
+### Opsi Alternatif: Instalasi Manual
+
+Jika Anda sudah memiliki Git dan Docker di komputer:
+
 1. **Kloning Repositori:**
    ```bash
-    git clone https://github.com/ucuk048/umkmense-pro.git
-    cd umkmense-pro
-    ```
-
-> [!TIP]
-> **Belum Pernah Memasang Docker Sama Sekali? (Panduan Pengguna Awam):**
-> Anda tidak perlu bingung mencari dan mengonfigurasi Docker secara manual.
-> * **Di Windows:** Cukup klik dua kali `START_UMKMENSE_BOT.bat`. Skrip akan otomatis mendeteksi bahwa Docker belum ada di komputer Anda, lalu menawarkan pemasangan otomatis 1-klik melalui `winget` atau membuka peramban langsung ke unduhan installer resmi Docker Desktop. Setelah instalasi Docker selesai dan aplikasinya dibuka, klik dua kali kembali `START_UMKMENSE_BOT.bat`.
-> * **Di Linux:** Jalankan `./setup.sh`, skrip akan otomatis mendeteksi dan menawarkan instalasi Docker resmi dengan 1 konfirmasi `Y`.
+   git clone https://github.com/ucuk048/umkmense-pro.git
+   cd umkmense-pro
+   ```
 
 2. **Konfigurasi Environment (.env):**
    Salin berkas template dan masukkan kunci API yang sudah diperoleh:
