@@ -31,9 +31,12 @@ echo Docker Desktop berhasil aktif!
 
 :docker_ready
 
-:: 2. Menyalakan seluruh container
+:: 2. Menyalakan seluruh container (Otomatis pasang & unduh jika belum ada)
 echo.
 echo [2/4] Memastikan seluruh container aktif (Postgres, Redis, Evolution API, n8n)...
+if exist "%~dp0docker-compose.yml" (
+    docker compose -f "%~dp0docker-compose.yml" up -d >nul 2>&1
+)
 for %%C in (evo_postgres evo_redis evolution_api n8n) do (
     docker inspect -f "{{.State.Running}}" %%C >"%TEMP%\umkmense_%%C.state" 2>nul
     set /p CONTAINER_RUNNING=<"%TEMP%\umkmense_%%C.state"

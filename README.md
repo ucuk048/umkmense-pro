@@ -245,15 +245,30 @@ WhatsApp Phone ---> [Internet] ---> Cloudflare Tunnel / Ngrok
    ```bash
    cp .env.example .env
    ```
-3. **Jalankan Bot Satu Klik:**
-   Di Windows, cukup jalankan:
-   ```cmd
-   START_UMKMENSE_BOT.bat
-   ```
-   Skrip otomatis menyalakan Docker, memeriksa database, mengimpor workflow versi rapi, dan memvalidasi healthcheck `http://localhost:5678/healthz`.
-4. **Buka Dashboard:**
-   * n8n Editor: `http://localhost:5678`
-   * Evolution API Manager: `http://localhost:8080`
+3. **Instalasi & Menjalankan Otomatis 1 Perintah:**
+   Pilih salah satu sesuai sistem operasi Anda:
+
+   * **Cara Universal (Docker Compose - Semua OS):**
+     ```bash
+     docker compose up -d
+     ```
+     *Perintah ini otomatis mengunduh image, menyiapkan network `evo_net`, membuat volume, dan menyalakan 4 container simultan (Postgres, Redis, Evolution API, dan n8n).*
+
+   * **Pengguna Windows (1-Klik Otomatis):**
+     Cukup klik ganda atau jalankan:
+     ```cmd
+     START_UMKMENSE_BOT.bat
+     ```
+     *Skrip ini otomatis mendeteksi Docker Desktop, menjalankan docker compose, memelihara database SQLite, mengimpor workflow `workflow_tidied.json`, dan langsung membuka antarmuka n8n di peramban.*
+
+   * **Pengguna Linux / macOS:**
+     ```bash
+     chmod +x setup.sh && ./setup.sh
+     ```
+
+4. **Buka Dashboard Layanan:**
+   * **n8n Editor Workflow:** [http://localhost:5678](http://localhost:5678)
+   * **Evolution API Dashboard:** [http://localhost:8080](http://localhost:8080)
 
 ---
 
